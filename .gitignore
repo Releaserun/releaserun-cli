@@ -1,0 +1,10 @@
+node_modules
+dist
+.cache
+*.log
+.env
+.DS_Store
+coverage/
+.nyc_output/
+.vscode/
+.idea/.npmrc

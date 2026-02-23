@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>releaserun</id>
+    <version>1.0.0</version>
+    <title>ReleaseRun CLI</title>
+    <authors>ReleaseRun</authors>
+    <projectUrl>https://releaserun.com</projectUrl>
+    <licenseUrl>https://github.com/releaserun/releaserun-cli/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/releaserun/releaserun-cli</projectSourceUrl>
+    <docsUrl>https://releaserun.com/tools/cli/</docsUrl>
+    <bugTrackerUrl>https://github.com/releaserun/releaserun-cli/issues</bugTrackerUrl>
+    <tags>devops security eol cve dependency cli</tags>
+    <summary>Scan dependency files for EOL status, CVEs, and health grade.</summary>
+    <description>
+ReleaseRun CLI scans common dependency files (package.json, requirements.txt, go.mod, and more) to identify end-of-life versions and known CVE risk.
+
+Install:
+  choco install releaserun
+
+Usage:
+  releaserun check
+    </description>
+    <releaseNotes>
+Initial Chocolatey package for ReleaseRun CLI v1.0.0.
+    </releaseNotes>
+    <dependencies>
+      <dependency id="nodejs" version="[18.0.0,)" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

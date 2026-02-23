@@ -1,0 +1,64 @@
+{
+  "name": "releaserun",
+  "version": "1.0.0",
+  "description": "CLI tool that scans your project's dependency files and reports EOL status, CVE counts, and health grades",
+  "main": "dist/index.js",
+  "bin": {
+    "releaserun": "dist/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "eol",
+    "end-of-life",
+    "cve",
+    "security",
+    "dependency-check",
+    "version",
+    "badge",
+    "cli"
+  ],
+  "author": "ReleaseRun",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/releaserun/releaserun-cli"
+  },
+  "homepage": "https://releaserun.com",
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.3"
+  },
+  "peerDependencies": {
+    "clipboardy": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "clipboardy": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
+}

@@ -1,0 +1,31 @@
+name: releaserun
+base: core22
+version: '1.0.0'
+summary: ReleaseRun CLI
+
+description: |
+  ReleaseRun CLI scans dependency files and reports end-of-life status,
+  CVE risk, and overall stack health grade.
+
+grade: stable
+confinement: strict
+
+apps:
+  releaserun:
+    command: bin/releaserun
+    plugs:
+      - home
+      - network
+
+parts:
+  releaserun:
+    plugin: npm
+    source: https://registry.npmjs.org/releaserun/-/releaserun-1.0.0.tgz
+    override-build: |
+      snapcraftctl build
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      cat > $SNAPCRAFT_PART_INSTALL/bin/releaserun << 'EOF'
+      #!/bin/sh
+      exec "$SNAP/usr/bin/node" "$SNAP/lib/node_modules/releaserun/dist/index.js" "$@"
+      EOF
+      chmod +x $SNAPCRAFT_PART_INSTALL/bin/releaserun
