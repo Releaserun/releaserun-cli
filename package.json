@@ -31,7 +31,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/releaserun/releaserun-cli"
+    "url": "https://github.com/Releaserun/releaserun-cli"
   },
   "homepage": "https://releaserun.com",
   "dependencies": {
