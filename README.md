@@ -200,5 +200,6 @@ MIT
 - [ReleaseRun](https://releaserun.com) - Track release lifecycles for 300+ technologies
 - [Free Developer Tools](https://releaserun.com/tools/) - 30 browser-based stack health tools
 - [Badge Builder](https://releaserun.com/badges/builder/) - Generate version/EOL/CVE badges
+- [Badge API Docs](https://releaserun.github.io/badges) - Full badge API reference with examples
 - [EOL Calendar](https://releaserun.com/eol-calendar/) - Upcoming end-of-life dates
-- [GitHub Action](https://github.com/Matheus-RR/badges) - Automated badge updates for your repo
+- [GitHub Action](https://github.com/Releaserun/releaserun-action) - Automated version checks in CI
