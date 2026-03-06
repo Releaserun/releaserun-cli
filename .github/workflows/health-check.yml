@@ -1,0 +1,24 @@
+name: Stack Health Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: Releaserun/releaserun-action@main
+        with:
+          path: '.'
+          fail-on: 'F'
+          comment: 'true'
+          badge: 'true'
