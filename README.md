@@ -2,8 +2,10 @@
 
 [![npm version](https://badge.fury.io/js/releaserun.svg)](https://badge.fury.io/js/releaserun)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js Health](https://img.releaserun.com/badge/health/nodejs.svg)](https://releaserun.com/tools/dep-eol-scanner/)
-[![Python Health](https://img.releaserun.com/badge/health/python.svg)](https://releaserun.com/tools/dep-eol-scanner/)
+[![Node.js Health](https://img.releaserun.com/badge/health/nodejs.svg)](https://releaserun.com/badges/nodejs/)
+[![Python Health](https://img.releaserun.com/badge/health/python.svg)](https://releaserun.com/badges/python/)
+[![Docker Health](https://img.releaserun.com/badge/health/docker-engine.svg)](https://releaserun.com/badges/docker/)
+[![Kubernetes Health](https://img.releaserun.com/badge/health/kubernetes.svg)](https://releaserun.com/badges/kubernetes/)
 
 Scan your project for end-of-life dependencies, known CVEs, and version health issues. Get an A-F grade for your entire stack in seconds. No signup, no API key, runs locally.
 
@@ -85,12 +87,12 @@ releaserun badges --badge-style flat-square # flat-square style
 Output (copied to clipboard automatically):
 
 ```markdown
-[![Node.js Health](https://img.releaserun.com/badge/health/nodejs.svg)](https://releaserun.com/tools/dep-eol-scanner/)
-[![Python Health](https://img.releaserun.com/badge/health/python.svg)](https://releaserun.com/tools/dep-eol-scanner/)
-[![React Health](https://img.releaserun.com/badge/health/react.svg)](https://releaserun.com/tools/dep-eol-scanner/)
+[![Node.js Health](https://img.releaserun.com/badge/health/nodejs.svg)](https://releaserun.com/badges/nodejs/)
+[![Python Health](https://img.releaserun.com/badge/health/python.svg)](https://releaserun.com/badges/python/)
+[![React Health](https://img.releaserun.com/badge/health/react.svg)](https://releaserun.com/badges/react/)
 ```
 
-Every badge links back to the [Dependency EOL Scanner](https://releaserun.com/tools/dep-eol-scanner/) where visitors can run their own check. Want more badge types? Try the [Badge Builder](https://releaserun.com/badges/builder/).
+Every badge links back to the [Dependency EOL Scanner](https://releaserun.com/badges/nodejs/) where visitors can run their own check. Want more badge types? Try the [Badge Builder](https://releaserun.com/badges/builder/).
 
 ### `releaserun ci`
 
@@ -181,7 +183,7 @@ No data leaves your machine except API calls to check version status. Your depen
 
 Don't want to install anything? The same checks are available as free browser-based tools at [releaserun.com/tools](https://releaserun.com/tools/):
 
-- [Dependency EOL Scanner](https://releaserun.com/tools/dep-eol-scanner/) - paste your package.json, requirements.txt, etc.
+- [Dependency EOL Scanner](https://releaserun.com/badges/nodejs/) - paste your package.json, requirements.txt, etc.
 - [Dockerfile Security Linter](https://releaserun.com/tools/dockerfile-linter/) - security and best practice checks
 - [K8s Deprecation Checker](https://releaserun.com/tools/k8s-deprecation-checker/) - find deprecated APIs in manifests
 - [Stack Health Scorecard](https://releaserun.com/tools/stack-health/) - pick your stack, get a grade
