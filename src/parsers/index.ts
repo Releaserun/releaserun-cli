@@ -8,6 +8,7 @@ import { parseGemfile } from './gemfile.js';
 import { parseCargoToml } from './cargo-toml.js';
 import { parsePomXml } from './pom-xml.js';
 import { parseComposerJson } from './composer.js';
+import { parseDockerCompose } from './docker-compose.js';
 
 export interface ScanOptions {
   verbose?: boolean;
@@ -27,6 +28,7 @@ export function scanDirectory(dir: string, options: ScanOptions = {}): DetectedT
     { name: 'pom.xml', fn: parsePomXml },
     { name: 'composer.json', fn: parseComposerJson },
     { name: 'Dockerfile', fn: parseDockerfile },
+    { name: 'docker-compose', fn: parseDockerCompose },
   ];
 
   for (const parser of parsers) {
