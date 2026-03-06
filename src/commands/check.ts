@@ -45,11 +45,16 @@ export async function runCheck(options: CheckOptions): Promise<ScanResult> {
       process.stderr.write(`  Fetching data for ${tech.name} (${slug})...\n`);
     }
 
-    // Fetch EOL data and badge data in parallel
-    const [eolData, badgeData] = await Promise.all([
-      fetchEolData(slug, tech.version, options.noCache).catch(() => null),
-      fetchBadgeData(slug, 'health', options.noCache, tech.version).catch(() => null),
-    ]);
+    // Skip API calls for unknown versions — we can't grade what we don't know
+    const hasVersion = tech.version && tech.version !== 'unknown';
+
+    // Fetch EOL data and badge data in parallel (only if version is known)
+    const [eolData, badgeData] = hasVersion
+      ? await Promise.all([
+          fetchEolData(slug, tech.version, options.noCache).catch(() => null),
+          fetchBadgeData(slug, 'health', options.noCache, tech.version).catch(() => null),
+        ])
+      : [null, null];
 
     // Determine CVE count (from badge if available, otherwise 0)
     let cves = 0;

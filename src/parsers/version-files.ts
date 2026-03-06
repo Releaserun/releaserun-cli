@@ -29,6 +29,10 @@ export function parseVersionFiles(dir: string): ParseResult {
 
     try {
       const content = readFileSync(filePath, 'utf-8').trim();
+      // Skip non-version values (lts/*, lts/iron, system, etc.)
+      if (!content || /^lts\//i.test(content) || content === 'system' || content === 'auto') {
+        continue;
+      }
       const version = extractVersion(content, config.versionStyle);
       if (version && !seen.has(config.tech)) {
         seen.add(config.tech);

@@ -46,6 +46,29 @@ export function parseDockerfile(dir: string): ParseResult {
     // Strip AS alias if stuck to image (shouldn't happen but defensive)
     image = image.split(/\s+/)[0];
 
+    // Skip unresolved ARG/ENV variables (e.g. ${NODE_VERSION})
+    if (image.includes('${') || image.includes('$')) {
+      continue;
+    }
+
+    // Skip digest-only references (e.g. python@sha256:abc123)
+    if (image.includes('@sha256:')) {
+      // Try to extract image name for detection, but version unknown
+      const digestImage = image.split('@')[0];
+      const digestParts = digestImage.split('/');
+      const digestLast = digestParts[digestParts.length - 1];
+      const digestTech = DOCKER_IMAGE_MAP[digestLast];
+      if (digestTech && !seen.has(digestTech)) {
+        seen.add(digestTech);
+        technologies.push({
+          name: digestTech,
+          version: 'unknown',
+          source: `${foundFile} (FROM ${image})`,
+        });
+      }
+      continue;
+    }
+
     // Parse image:tag format
     // Handle registry/image:tag, image:tag, image
     const parts = image.split('/');

@@ -9,6 +9,7 @@ import { parseCargoToml } from './cargo-toml.js';
 import { parsePomXml } from './pom-xml.js';
 import { parseComposerJson } from './composer.js';
 import { parseDockerCompose } from './docker-compose.js';
+import { parsePyprojectToml } from './pyproject-toml.js';
 
 export interface ScanOptions {
   verbose?: boolean;
@@ -22,6 +23,7 @@ export function scanDirectory(dir: string, options: ScanOptions = {}): DetectedT
     { name: 'version files', fn: parseVersionFiles },
     { name: 'package.json', fn: parsePackageJson },
     { name: 'requirements.txt/Pipfile', fn: parseRequirementsTxt },
+    { name: 'pyproject.toml', fn: parsePyprojectToml },
     { name: 'go.mod', fn: parseGoMod },
     { name: 'Gemfile', fn: parseGemfile },
     { name: 'Cargo.toml', fn: parseCargoToml },

@@ -50,8 +50,9 @@ function parseReqFile(
       continue;
     }
 
-    // Parse "package==1.2.3" or "package>=1.2" or "package"
-    const match = trimmed.match(/^([a-zA-Z0-9_-]+)\s*(?:[>=<~!]+\s*([0-9][^\s,;]*))?/);
+    // Parse "package==1.2.3" or "package[extra]>=1.2" or "package"
+    // Handle extras like psycopg[binary], redis[hiredis], celery[redis]
+    const match = trimmed.match(/^([a-zA-Z0-9_-]+)(?:\[[^\]]*\])?\s*(?:[>=<~!]+\s*([0-9][^\s,;]*))?/);
     if (!match) continue;
 
     const pkgName = match[1].toLowerCase();
