@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { JAVA_TECH_MAP } from '../mapping/packages.js';
+import { JAVA_TECH_MAP, JAVA_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parsePomXml(dir: string): ParseResult {
   const filePath = join(dir, 'pom.xml');
@@ -59,25 +59,36 @@ export function parsePomXml(dir: string): ParseResult {
       
       // Check both full coordinate and artifactId
       const fullCoordinate = `${groupId}:${artifactId}`;
-      const tech = JAVA_TECH_MAP[fullCoordinate] || JAVA_TECH_MAP[artifactId];
+      const directTech = JAVA_TECH_MAP[fullCoordinate] || JAVA_TECH_MAP[artifactId];
       
-      if (tech && !seen.has(tech)) {
-        seen.add(tech);
+      if (directTech && !seen.has(directTech)) {
+        seen.add(directTech);
         const parsedVersion = parseVersionConstraint(version);
         technologies.push({
-          name: tech,
+          name: directTech,
           version: parsedVersion || 'unknown',
+          source: `pom.xml (${artifactId})`,
+        });
+        continue;
+      }
+      
+      const indicatorTech = JAVA_INDICATOR_MAP[fullCoordinate] || JAVA_INDICATOR_MAP[artifactId];
+      if (indicatorTech && !seen.has(indicatorTech)) {
+        seen.add(indicatorTech);
+        technologies.push({
+          name: indicatorTech,
+          version: 'unknown',
           source: `pom.xml (${artifactId})`,
         });
       }
     }
   }
 
-  // If no Java version found but pom.xml exists, assume Java 8 (common default)
+  // If no Java version found but pom.xml exists, version is unknown
   if (!technologies.some(t => t.name === 'java')) {
     technologies.push({
       name: 'java',
-      version: '8',
+      version: 'unknown',
       source: 'pom.xml',
     });
   }

@@ -24,11 +24,12 @@ export function generateBadges(
     seen.add(slug);
 
     const label = formatTechLabel(tech.name);
-    const versionLabel = tech.version && tech.version !== 'unknown' ? ` ${tech.version}` : '';
-    const versionPath = tech.version && tech.version !== 'unknown' ? `/${tech.version}` : '';
+    const hasVersion = tech.version && tech.version !== 'unknown' && tech.version !== '*' && tech.version !== 'latest';
+    const versionLabel = hasVersion ? ` ${tech.version}` : '';
+    const versionPath = hasVersion ? `/${tech.version}` : '';
     const styleParam = options.style !== 'flat' ? `?style=${options.style}` : '';
     const url = `${BADGE_BASE}/${options.type}/${slug}${versionPath}.svg${styleParam}`;
-    const link = tech.version && tech.version !== 'unknown'
+    const link = hasVersion
       ? `https://releaserun.com/${slug}/${tech.version}/`
       : `https://releaserun.com/${slug}/`;
 

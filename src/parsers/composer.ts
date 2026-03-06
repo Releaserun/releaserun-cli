@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { PHP_TECH_MAP } from '../mapping/packages.js';
+import { PHP_TECH_MAP, PHP_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parseComposerJson(dir: string): ParseResult {
   const filePath = join(dir, 'composer.json');
@@ -44,23 +44,33 @@ export function parseComposerJson(dir: string): ParseResult {
     // Skip php version (already handled above)
     if (pkgName === 'php') continue;
 
-    const tech = PHP_TECH_MAP[pkgName];
-    if (tech && !seen.has(tech)) {
-      seen.add(tech);
+    const directTech = PHP_TECH_MAP[pkgName];
+    if (directTech && !seen.has(directTech)) {
+      seen.add(directTech);
       const version = parseVersionConstraint(versionConstraint);
       technologies.push({
-        name: tech,
+        name: directTech,
         version: version || 'unknown',
+        source: `composer.json (${pkgName})`,
+      });
+      continue;
+    }
+    const indicatorTech = PHP_INDICATOR_MAP[pkgName];
+    if (indicatorTech && !seen.has(indicatorTech)) {
+      seen.add(indicatorTech);
+      technologies.push({
+        name: indicatorTech,
+        version: 'unknown',
         source: `composer.json (${pkgName})`,
       });
     }
   }
 
-  // If no PHP version found but composer.json exists, assume PHP 8.0
+  // If no PHP version found but composer.json exists, version is unknown
   if (!technologies.some(t => t.name === 'php')) {
     technologies.push({
       name: 'php',
-      version: '8.0',
+      version: 'unknown',
       source: 'composer.json',
     });
   }

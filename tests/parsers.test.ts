@@ -30,10 +30,14 @@ describe('Package.json Parser', () => {
     writeFileSync(join(testDir, 'package.json'), JSON.stringify(packageJson));
     const result = parsePackageJson(testDir);
     
-    expect(result.technologies).toHaveLength(2);
-    expect(result.technologies[0].name).toBe('nodejs');
-    expect(result.technologies[0].version).toBe('18.0');
-    expect(result.technologies[1].name).toBe('nodejs'); // express maps to nodejs
+    // engines.node gives us nodejs with correct version
+    // express is now an indicator (version 'unknown'), deduped against engines.node
+    const nodeTech = result.technologies.find(t => t.name === 'nodejs');
+    expect(nodeTech).toBeDefined();
+    expect(nodeTech?.version).toBe('18');
+    // express should NOT create a second nodejs entry (dedup)
+    const nodeEntries = result.technologies.filter(t => t.name === 'nodejs');
+    expect(nodeEntries).toHaveLength(1);
   });
 
   it('should handle missing package.json', () => {
@@ -63,10 +67,12 @@ describe('Requirements.txt Parser', () => {
     writeFileSync(join(testDir, 'requirements.txt'), requirements);
     const result = parseRequirementsTxt(testDir);
     
+    // django (direct) + python (requests indicator, deduped with inferred python) + postgresql (psycopg2 indicator)
     expect(result.technologies).toHaveLength(3);
     expect(result.technologies.find(t => t.name === 'django')).toBeDefined();
-    expect(result.technologies.find(t => t.name === 'python')).toBeDefined();
+    expect(result.technologies.find(t => t.name === 'django')?.version).toBe('4.2'); // direct: pip version = Django version
     expect(result.technologies.find(t => t.name === 'postgresql')).toBeDefined();
+    expect(result.technologies.find(t => t.name === 'postgresql')?.version).toBe('unknown'); // indicator: pip version ≠ PG version
   });
 
   it('should infer Python version', () => {
@@ -96,8 +102,12 @@ require (
     const result = parseGoMod(testDir);
     
     expect(result.technologies.length).toBeGreaterThanOrEqual(2);
-    expect(result.technologies.find(t => t.name === 'golang')).toBeDefined();
-    expect(result.technologies.find(t => t.name === 'postgresql')).toBeDefined();
+    const goTech = result.technologies.find(t => t.name === 'golang');
+    expect(goTech).toBeDefined();
+    expect(goTech?.version).toBe('1.21'); // from go directive
+    const pgTech = result.technologies.find(t => t.name === 'postgresql');
+    expect(pgTech).toBeDefined();
+    expect(pgTech?.version).toBe('unknown'); // indicator: lib/pq 1.10 ≠ PostgreSQL 1.10
   });
 });
 
@@ -133,7 +143,9 @@ serde = "1.0"`;
     
     expect(result.technologies.length).toBeGreaterThanOrEqual(1);
     expect(result.technologies.find(t => t.name === 'rust')).toBeDefined();
-    expect(result.technologies.find(t => t.name === 'rust' && t.version === '1.56')).toBeDefined();
+    // edition 2021 → Rust 1.56 (approximate)
+    const rustTech = result.technologies.find(t => t.name === 'rust');
+    expect(rustTech?.version).toBe('1.56');
   });
 });
 

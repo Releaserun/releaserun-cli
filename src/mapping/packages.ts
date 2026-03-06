@@ -1,29 +1,41 @@
 // Package name to technology mapping
 
+// Packages where the npm version IS the technology version (safe to use version)
 export const NPM_TECH_MAP: Record<string, string> = {
-  // Node.js frameworks
+  // React ecosystem (react 18.2 = React 18.2)
+  'react': 'react',
+  'react-dom': 'react',
+
+  // Vue ecosystem (vue 3.3 = Vue 3.3)
+  'vue': 'vue',
+
+  // Angular (@angular/core 17 = Angular 17)
+  '@angular/core': 'angular',
+
+  // Build tools (version = product version)
+  'typescript': 'typescript',
+  'webpack': 'webpack',
+  'vite': 'vite',
+  'esbuild': 'esbuild',
+  'electron': 'electron',
+};
+
+// Packages that indicate a technology is used, but the npm package version
+// is NOT the technology version (client libraries, frameworks, etc.)
+// These detect the tech but set version to 'unknown'.
+export const NPM_INDICATOR_MAP: Record<string, string> = {
+  // Node.js frameworks — express 4.18 is NOT Node.js 4.18
   'express': 'nodejs',
   'fastify': 'nodejs',
   'koa': 'nodejs',
   '@nestjs/core': 'nodejs',
   'nestjs': 'nodejs',
   'hapi': 'nodejs',
+  'next': 'nodejs',
+  'gatsby': 'nodejs',
+  'nuxt': 'nodejs',
 
-  // React ecosystem
-  'react': 'react',
-  'react-dom': 'react',
-  'next': 'react',
-  'gatsby': 'react',
-
-  // Vue ecosystem
-  'vue': 'vue',
-  'nuxt': 'vue',
-
-  // Angular
-  '@angular/core': 'angular',
-  'angular': 'angular',
-
-  // Databases
+  // Database clients — pg 8.11 is NOT PostgreSQL 8.11
   'pg': 'postgresql',
   'pg-promise': 'postgresql',
   'mysql2': 'mysql',
@@ -32,18 +44,16 @@ export const NPM_TECH_MAP: Record<string, string> = {
   'ioredis': 'redis',
   'mongoose': 'mongodb',
   'mongodb': 'mongodb',
-
-  // Others
-  'typescript': 'typescript',
-  'webpack': 'webpack',
-  'vite': 'vite',
-  'esbuild': 'esbuild',
-  'electron': 'electron',
 };
 
+// Python packages where the pip version IS the tech version
 export const PIP_TECH_MAP: Record<string, string> = {
   'django': 'django',
   'flask': 'flask',
+};
+
+// Python packages that indicate a tech but version doesn't match
+export const PIP_INDICATOR_MAP: Record<string, string> = {
   'fastapi': 'python',
   'sqlalchemy': 'python',
   'celery': 'python',
@@ -60,7 +70,11 @@ export const PIP_TECH_MAP: Record<string, string> = {
   'requests': 'python',
 };
 
-export const GO_TECH_MAP: Record<string, string> = {
+// Go modules: ALL are indicators (module version ≠ tech version)
+// Go version comes from the `go` directive, not from module versions
+export const GO_TECH_MAP: Record<string, string> = {};
+
+export const GO_INDICATOR_MAP: Record<string, string> = {
   'github.com/gin-gonic/gin': 'golang',
   'github.com/labstack/echo': 'golang',
   'github.com/gofiber/fiber': 'golang',
@@ -72,8 +86,12 @@ export const GO_TECH_MAP: Record<string, string> = {
   'gorm.io/gorm': 'golang',
 };
 
+// Ruby: rails version = Rails version (correct), rest are indicators
 export const RUBY_TECH_MAP: Record<string, string> = {
   'rails': 'rails',
+};
+
+export const RUBY_INDICATOR_MAP: Record<string, string> = {
   'sinatra': 'ruby',
   'pg': 'postgresql',
   'mysql2': 'mysql',
@@ -83,7 +101,10 @@ export const RUBY_TECH_MAP: Record<string, string> = {
   'sidekiq': 'ruby',
 };
 
-export const RUST_TECH_MAP: Record<string, string> = {
+// Rust crates: all are indicators (crate version ≠ Rust version)
+export const RUST_TECH_MAP: Record<string, string> = {};
+
+export const RUST_INDICATOR_MAP: Record<string, string> = {
   'actix-web': 'rust',
   'rocket': 'rust',
   'warp': 'rust',
@@ -95,9 +116,13 @@ export const RUST_TECH_MAP: Record<string, string> = {
   'sqlx': 'rust',
 };
 
+// Java: spring-boot version IS Spring Boot version (correct)
 export const JAVA_TECH_MAP: Record<string, string> = {
   'org.springframework.boot:spring-boot-starter': 'spring-boot',
   'spring-boot-starter': 'spring-boot',
+};
+
+export const JAVA_INDICATOR_MAP: Record<string, string> = {
   'org.springframework:spring-core': 'spring',
   'spring-core': 'spring',
   'io.quarkus:quarkus-core': 'quarkus',
@@ -108,10 +133,14 @@ export const JAVA_TECH_MAP: Record<string, string> = {
   'org.junit.jupiter:junit-jupiter': 'java',
 };
 
+// PHP: laravel/symfony versions are correct
 export const PHP_TECH_MAP: Record<string, string> = {
   'laravel/framework': 'laravel',
   'symfony/symfony': 'symfony',
   'symfony/framework-bundle': 'symfony',
+};
+
+export const PHP_INDICATOR_MAP: Record<string, string> = {
   'cakephp/cakephp': 'php',
   'zendframework/zend-framework': 'php',
   'laminas/laminas-mvc': 'php',
@@ -132,6 +161,7 @@ export const DOCKER_IMAGE_MAP: Record<string, string> = {
   'openjdk': 'java',
   'php': 'php',
   'postgres': 'postgresql',
+  'postgresql': 'postgresql',
   'mysql': 'mysql',
   'redis': 'redis',
   'mongo': 'mongodb',

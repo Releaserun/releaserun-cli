@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { PIP_TECH_MAP } from '../mapping/packages.js';
+import { PIP_TECH_MAP, PIP_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parseRequirementsTxt(dir: string): ParseResult {
   const technologies: DetectedTech[] = [];
@@ -57,12 +57,25 @@ function parseReqFile(
     const pkgName = match[1].toLowerCase();
     const version = match[2] || 'unknown';
 
-    const tech = PIP_TECH_MAP[pkgName];
-    if (tech && !seen.has(tech)) {
-      seen.add(tech);
+    // Direct match (pip version = tech version, e.g. Django 5.0 = Django 5.0)
+    const directTech = PIP_TECH_MAP[pkgName];
+    if (directTech && !seen.has(directTech)) {
+      seen.add(directTech);
       technologies.push({
-        name: tech,
+        name: directTech,
         version: extractMajorMinor(version),
+        source: `${sourceName} (${pkgName})`,
+      });
+      continue;
+    }
+
+    // Indicator (pip version ≠ tech version, e.g. psycopg2 2.9 ≠ PostgreSQL 2.9)
+    const indicatorTech = PIP_INDICATOR_MAP[pkgName];
+    if (indicatorTech && !seen.has(indicatorTech)) {
+      seen.add(indicatorTech);
+      technologies.push({
+        name: indicatorTech,
+        version: 'unknown',
         source: `${sourceName} (${pkgName})`,
       });
     }
@@ -99,13 +112,23 @@ function parsePipfile(
     if (!match) continue;
 
     const pkgName = match[1].toLowerCase();
-    const tech = PIP_TECH_MAP[pkgName];
-    if (tech && !seen.has(tech)) {
-      seen.add(tech);
+    const directTech = PIP_TECH_MAP[pkgName];
+    if (directTech && !seen.has(directTech)) {
+      seen.add(directTech);
       const version = match[2].replace(/[>=<~^*]/g, '').trim() || 'unknown';
       technologies.push({
-        name: tech,
+        name: directTech,
         version: extractMajorMinor(version),
+        source: `Pipfile (${pkgName})`,
+      });
+      continue;
+    }
+    const indicatorTech = PIP_INDICATOR_MAP[pkgName];
+    if (indicatorTech && !seen.has(indicatorTech)) {
+      seen.add(indicatorTech);
+      technologies.push({
+        name: indicatorTech,
+        version: 'unknown',
         source: `Pipfile (${pkgName})`,
       });
     }

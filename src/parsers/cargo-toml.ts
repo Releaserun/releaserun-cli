@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { RUST_TECH_MAP } from '../mapping/packages.js';
+import { RUST_TECH_MAP, RUST_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parseCargoToml(dir: string): ParseResult {
   const filePath = join(dir, 'Cargo.toml');
@@ -18,23 +18,35 @@ export function parseCargoToml(dir: string): ParseResult {
     return { technologies };
   }
 
-  // Extract Rust edition (approximates version)
-  const editionMatch = content.match(/^edition\s*=\s*["'](\d+)["']/m);
-  if (editionMatch) {
-    const edition = editionMatch[1];
-    // Map edition to approximate Rust version
-    const versionMap: Record<string, string> = {
-      '2015': '1.0',
-      '2018': '1.31',
-      '2021': '1.56',
-      '2024': '1.76',
-    };
-    const rustVersion = versionMap[edition] || edition;
+  // Prefer rust-version (MSRV) over edition for accuracy
+  const rustVersionMatch = content.match(/^rust-version\s*=\s*["'](\d+\.\d+(?:\.\d+)?)["']/m);
+  if (rustVersionMatch) {
+    const ver = rustVersionMatch[1];
+    const match = ver.match(/^(\d+)\.(\d+)/);
+    const version = match ? `${match[1]}.${match[2]}` : ver;
     technologies.push({
       name: 'rust',
-      version: rustVersion,
-      source: `Cargo.toml (edition ${edition})`,
+      version,
+      source: `Cargo.toml (rust-version)`,
     });
+  } else {
+    // Fall back to edition as rough approximation
+    const editionMatch = content.match(/^edition\s*=\s*["'](\d+)["']/m);
+    if (editionMatch) {
+      const edition = editionMatch[1];
+      const versionMap: Record<string, string> = {
+        '2015': '1.0',
+        '2018': '1.31',
+        '2021': '1.56',
+        '2024': '1.85',
+      };
+      const rustVersion = versionMap[edition] || edition;
+      technologies.push({
+        name: 'rust',
+        version: rustVersion,
+        source: `Cargo.toml (edition ${edition})`,
+      });
+    }
   }
 
   // Parse dependencies sections
@@ -52,13 +64,13 @@ export function parseCargoToml(dir: string): ParseResult {
         const crateName = match[1];
         const version = match[2] || match[3];
         
-        const tech = RUST_TECH_MAP[crateName];
-        if (tech && !seen.has(tech)) {
-          seen.add(tech);
-          const parsedVersion = version ? parseVersionConstraint(version) : 'latest';
+        // Crate versions are NOT the tech version (actix-web 4 ≠ Rust 4)
+        const indicatorTech = RUST_INDICATOR_MAP[crateName];
+        if (indicatorTech && !seen.has(indicatorTech)) {
+          seen.add(indicatorTech);
           technologies.push({
-            name: tech,
-            version: parsedVersion || 'unknown',
+            name: indicatorTech,
+            version: 'unknown',
             source: `Cargo.toml (${crateName})`,
           });
         }
@@ -66,11 +78,11 @@ export function parseCargoToml(dir: string): ParseResult {
     }
   }
 
-  // If no Rust version found but Cargo.toml exists, assume latest
+  // If no Rust version found but Cargo.toml exists, version is unknown
   if (!technologies.some(t => t.name === 'rust')) {
     technologies.push({
       name: 'rust',
-      version: 'latest',
+      version: 'unknown',
       source: 'Cargo.toml',
     });
   }

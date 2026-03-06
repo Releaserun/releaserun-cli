@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { GO_TECH_MAP } from '../mapping/packages.js';
+import { GO_TECH_MAP, GO_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parseGoMod(dir: string): ParseResult {
   const filePath = join(dir, 'go.mod');
@@ -56,9 +56,10 @@ export function parseGoMod(dir: string): ParseResult {
     const modulePath = match[1];
     const version = match[2];
 
-    // Check full path first, then check prefixes
+    // Go module versions are the MODULE version, not the technology version
+    // e.g. github.com/lib/pq v1.10.9 → PostgreSQL detected, but version is unknown
     let tech: string | undefined;
-    for (const [pattern, techName] of Object.entries(GO_TECH_MAP)) {
+    for (const [pattern, techName] of Object.entries(GO_INDICATOR_MAP)) {
       if (modulePath.startsWith(pattern)) {
         tech = techName;
         break;
@@ -69,7 +70,7 @@ export function parseGoMod(dir: string): ParseResult {
       seen.add(tech);
       technologies.push({
         name: tech,
-        version,
+        version: 'unknown',
         source: `go.mod (${modulePath})`,
       });
     }

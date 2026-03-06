@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ParseResult, DetectedTech } from '../types.js';
-import { RUBY_TECH_MAP } from '../mapping/packages.js';
+import { RUBY_TECH_MAP, RUBY_INDICATOR_MAP } from '../mapping/packages.js';
 
 export function parseGemfile(dir: string): ParseResult {
   const filePath = join(dir, 'Gemfile');
@@ -39,13 +39,23 @@ export function parseGemfile(dir: string): ParseResult {
     const gemName = match[1];
     const versionConstraint = match[2];
     
-    const tech = RUBY_TECH_MAP[gemName];
-    if (tech && !seen.has(tech)) {
-      seen.add(tech);
-      const version = versionConstraint ? parseVersionConstraint(versionConstraint) : 'latest';
+    const directTech = RUBY_TECH_MAP[gemName];
+    if (directTech && !seen.has(directTech)) {
+      seen.add(directTech);
+      const version = versionConstraint ? parseVersionConstraint(versionConstraint) : 'unknown';
       technologies.push({
-        name: tech,
+        name: directTech,
         version: version || 'unknown',
+        source: `Gemfile (${gemName})`,
+      });
+      continue;
+    }
+    const indicatorTech = RUBY_INDICATOR_MAP[gemName];
+    if (indicatorTech && !seen.has(indicatorTech)) {
+      seen.add(indicatorTech);
+      technologies.push({
+        name: indicatorTech,
+        version: 'unknown',
         source: `Gemfile (${gemName})`,
       });
     }

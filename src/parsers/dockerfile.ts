@@ -30,17 +30,21 @@ export function parseDockerfile(dir: string): ParseResult {
 
   const seen = new Set<string>();
 
-  // Parse FROM lines
-  const fromLines = content.match(/^FROM\s+(\S+)/gm);
+  // Parse FROM lines (capture whole line for proper parsing)
+  const fromLines = content.match(/^FROM\s+.+$/gm);
   if (!fromLines) {
     return { technologies };
   }
 
   for (const fromLine of fromLines) {
-    const match = fromLine.match(/^FROM\s+(?:--platform=\S+\s+)?(\S+)/);
+    // Handle --platform flag and AS alias
+    const match = fromLine.match(/^FROM\s+(?:--\w+=\S+\s+)*(\S+)/);
     if (!match) continue;
 
-    const image = match[1];
+    let image = match[1];
+
+    // Strip AS alias if stuck to image (shouldn't happen but defensive)
+    image = image.split(/\s+/)[0];
 
     // Parse image:tag format
     // Handle registry/image:tag, image:tag, image
