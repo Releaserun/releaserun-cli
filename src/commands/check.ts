@@ -1,11 +1,11 @@
 import { resolve } from 'node:path';
 import { scanDirectory } from '../parsers/index.js';
 import { getSlug } from '../mapping/slugs.js';
-import { fetchEolData } from '../api/endoflife.js';
+import { fetchEolData, fetchProductCycles } from '../api/endoflife.js';
 import { fetchBadgeData } from '../api/releaserun.js';
 import { calculateGrade, calculateOverallGrade } from '../output/grade.js';
 import { renderTable } from '../output/table.js';
-import type { TechReport, ScanResult, Grade } from '../types.js';
+import type { TechReport, ScanResult, Grade, DetectedTech } from '../types.js';
 
 export interface CheckOptions {
   path?: string;
@@ -35,10 +35,13 @@ export async function runCheck(options: CheckOptions): Promise<ScanResult> {
     };
   }
 
+  // Resolve minimum constraints to actual latest supported version
+  const resolved = await resolveConstraints(detected, options);
+
   // Fetch data for each technology
   const reports: TechReport[] = [];
 
-  for (const tech of detected) {
+  for (const tech of resolved) {
     const slug = getSlug(tech.name);
 
     if (options.verbose) {
@@ -98,6 +101,106 @@ export async function runCheck(options: CheckOptions): Promise<ScanResult> {
     scannedPath: targetDir,
     url: 'https://releaserun.com/tools/dep-eol-scanner/',
   };
+}
+
+/**
+ * For technologies detected with constraintType='minimum' (e.g. >=18),
+ * resolve to the highest ACTIVE cycle from endoflife.date that satisfies
+ * the minimum.  Pinned / range versions pass through unchanged.
+ */
+async function resolveConstraints(
+  detected: DetectedTech[],
+  options: CheckOptions,
+): Promise<DetectedTech[]> {
+  const results: DetectedTech[] = [];
+
+  for (const tech of detected) {
+    if (tech.constraintType !== 'minimum' || !tech.version) {
+      results.push(tech);
+      continue;
+    }
+
+    const slug = getSlug(tech.name);
+    try {
+      const cycles = await fetchProductCycles(slug, options.noCache);
+      if (!cycles || cycles.length === 0) {
+        // Can't resolve — keep original but annotate source
+        results.push({
+          ...tech,
+          source: `${tech.source} (min constraint)`,
+        });
+        continue;
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const minMajor = parseMajor(tech.version);
+      const minMinor = parseMinor(tech.version);
+
+      // Find highest active cycle that is >= the minimum version.
+      // Prefer LTS cycles when available (e.g. Node even-numbered releases).
+      let bestLts: { cycle: string; major: number; minor: number } | null = null;
+      let bestAny: { cycle: string; major: number; minor: number } | null = null;
+
+      for (const c of cycles) {
+        // Skip EOL cycles
+        if (c.eol === true) continue;
+        if (typeof c.eol === 'string' && c.eol <= today) continue;
+
+        const cMajor = parseMajor(c.cycle);
+        const cMinor = parseMinor(c.cycle);
+
+        // Must be >= minimum
+        if (cMajor < minMajor) continue;
+        if (cMajor === minMajor && cMinor < minMinor) continue;
+
+        const isHigher = (cur: typeof bestAny) =>
+          !cur || cMajor > cur.major || (cMajor === cur.major && cMinor > cur.minor);
+
+        const entry = { cycle: c.cycle, major: cMajor, minor: cMinor };
+        if (isHigher(bestAny)) bestAny = entry;
+        if (c.lts && isHigher(bestLts)) bestLts = entry;
+      }
+
+      const best = bestLts ?? bestAny;
+
+      if (best) {
+        if (options.verbose) {
+          process.stderr.write(
+            `  Resolved ${tech.name} ${tech.originalConstraint} → ${best.cycle}\n`,
+          );
+        }
+        results.push({
+          ...tech,
+          version: best.cycle,
+          source: `${tech.source} (resolved from ${tech.originalConstraint})`,
+          constraintType: 'pinned', // now resolved
+        });
+      } else {
+        // No active cycle found >= minimum — keep original but annotate
+        results.push({
+          ...tech,
+          source: `${tech.source} (min constraint)`,
+        });
+      }
+    } catch {
+      results.push({
+        ...tech,
+        source: `${tech.source} (min constraint)`,
+      });
+    }
+  }
+
+  return results;
+}
+
+function parseMajor(v: string): number {
+  const m = v.match(/^(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
+}
+
+function parseMinor(v: string): number {
+  const m = v.match(/^\d+\.(\d+)/);
+  return m ? parseInt(m[1], 10) : 0;
 }
 
 export function getExitCode(result: ScanResult, failOn: string = 'F'): number {

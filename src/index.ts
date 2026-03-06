@@ -16,7 +16,7 @@ program
   .version('1.3.0');
 
 program
-  .command('check')
+  .command('check [directory]')
   .description('Scan a directory for dependency files and report EOL/CVE status')
   .option('-p, --path <dir>', 'Directory to scan (default: cwd)')
   .option('--json', 'Output JSON instead of table')
@@ -24,10 +24,10 @@ program
   .option('--no-cache', 'Bypass response cache')
   .option('--verbose', 'Show detailed output')
   .option('--fail-on <grade>', 'Exit non-zero if any tech is below this grade', 'F')
-  .action(async (opts) => {
+  .action(async (directory, opts) => {
     try {
       const result = await runCheck({
-        path: opts.path,
+        path: opts.path || directory,
         json: opts.json,
         noColor: opts.color === false,
         noCache: opts.cache === false,

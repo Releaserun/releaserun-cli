@@ -22,12 +22,14 @@ export function parsePackageJson(dir: string): ParseResult {
   // Extract Node.js version from engines.node
   const engines = pkg.engines as Record<string, string> | undefined;
   if (engines?.node) {
-    const nodeVersion = parseVersionConstraint(engines.node);
-    if (nodeVersion) {
+    const parsed = parseVersionConstraint(engines.node);
+    if (parsed.version) {
       technologies.push({
         name: 'nodejs',
-        version: nodeVersion,
+        version: parsed.version,
         source: 'package.json (engines.node)',
+        constraintType: parsed.constraintType,
+        originalConstraint: parsed.isConstraint ? engines.node.trim() : undefined,
       });
     }
   }
@@ -46,12 +48,14 @@ export function parsePackageJson(dir: string): ParseResult {
     const directTech = NPM_TECH_MAP[pkgName];
     if (directTech && !seen.has(directTech)) {
       seen.add(directTech);
-      const version = parseVersionConstraint(versionRange);
-      if (version && version !== '*' && version !== 'latest' && version !== 'x') {
+      const parsed = parseVersionConstraint(versionRange);
+      if (parsed.version && parsed.version !== '*' && parsed.version !== 'latest' && parsed.version !== 'x') {
         technologies.push({
           name: directTech,
-          version,
+          version: parsed.version,
           source: `package.json (${pkgName})`,
+          constraintType: parsed.constraintType,
+          originalConstraint: parsed.isConstraint ? versionRange.trim() : undefined,
         });
       } else {
         technologies.push({
@@ -78,26 +82,85 @@ export function parsePackageJson(dir: string): ParseResult {
   return { technologies };
 }
 
-function parseVersionConstraint(constraint: string): string {
+interface ParsedConstraint {
+  version: string;
+  constraintType: 'pinned' | 'minimum' | 'range';
+  isConstraint: boolean;
+}
+
+function parseVersionConstraint(constraint: string): ParsedConstraint {
   const trimmed = constraint.trim();
 
   // Handle wildcards and non-version values
   if (trimmed === '*' || trimmed === 'latest' || trimmed === 'x' || trimmed === '') {
-    return trimmed || 'unknown';
+    return { version: trimmed || 'unknown', constraintType: 'pinned', isConstraint: false };
   }
 
-  // Strip common prefixes: ^, ~, >=, =, v
-  const cleaned = trimmed.replace(/^[\^~>=<v\s]+/, '').trim();
-  // Take first version if there's a range (e.g. ">=16.0.0 <18.0.0")
-  const first = cleaned.split(/\s/)[0];
-  // Extract major.minor (drop patch for API lookups)
-  const match = first.match(/^(\d+)(?:\.(\d+))?/);
-  if (match) {
-    // For engines.node ">=18.0.0", return "18" not "18.0"
-    if (match[2] === '0') {
-      return match[1];
+  // Detect constraint type
+  const hasOr = /\|\|/.test(trimmed);
+  const hasGte = /^>=/.test(trimmed);
+  const hasCaret = /^\^/.test(trimmed);
+  const hasTilde = /^~/.test(trimmed);
+  const hasRange = /\s+-\s+/.test(trimmed);
+
+  // For || ranges (e.g. "18 || 20 || 22"), pick the HIGHEST version
+  if (hasOr) {
+    const parts = trimmed.split(/\s*\|\|\s*/);
+    let highest = '';
+    let highestMajor = -1;
+    for (const part of parts) {
+      const cleaned = part.replace(/^[\^~>=<v\s]+/, '').trim();
+      const m = cleaned.match(/^(\d+)/);
+      if (m) {
+        const major = parseInt(m[1], 10);
+        if (major > highestMajor) {
+          highestMajor = major;
+          highest = cleaned;
+        }
+      }
     }
-    return match[2] !== undefined ? `${match[1]}.${match[2]}` : match[1];
+    if (highest) {
+      const m = highest.match(/^(\d+)(?:\.(\d+))?/);
+      const version = m ? (m[2] && m[2] !== '0' ? `${m[1]}.${m[2]}` : m[1]) : highest;
+      return { version, constraintType: 'range', isConstraint: true };
+    }
   }
-  return cleaned;
+
+  // For >= constraints, this is a MINIMUM. Store it but flag it.
+  if (hasGte) {
+    const cleaned = trimmed.replace(/^>=\s*/, '').split(/\s/)[0].replace(/^v/, '');
+    const match = cleaned.match(/^(\d+)(?:\.(\d+))?/);
+    if (match) {
+      const version = match[2] && match[2] !== '0'
+        ? `${match[1]}.${match[2]}`
+        : match[1];
+      return { version, constraintType: 'minimum', isConstraint: true };
+    }
+  }
+
+  // For ^ and ~ (semver ranges), these are close to pinned for major.minor
+  // ^18.0.0 means >=18.0.0 <19.0.0 — effectively "uses 18.x"
+  // ~18.0.0 means >=18.0.0 <18.1.0 — effectively "uses 18.0.x"
+  // These are reasonable to treat as the stated version
+  if (hasCaret || hasTilde) {
+    const cleaned = trimmed.replace(/^[\^~]\s*/, '').trim();
+    const match = cleaned.match(/^(\d+)(?:\.(\d+))?/);
+    if (match) {
+      const version = match[2] && match[2] !== '0'
+        ? `${match[1]}.${match[2]}`
+        : match[1];
+      return { version, constraintType: 'pinned', isConstraint: false };
+    }
+  }
+
+  // Plain version (pinned)
+  const cleaned = trimmed.replace(/^[=v\s]+/, '').trim().split(/\s/)[0];
+  const match = cleaned.match(/^(\d+)(?:\.(\d+))?/);
+  if (match) {
+    const version = match[2] && match[2] !== '0'
+      ? `${match[1]}.${match[2]}`
+      : match[1];
+    return { version, constraintType: 'pinned', isConstraint: false };
+  }
+  return { version: cleaned, constraintType: 'pinned', isConstraint: false };
 }

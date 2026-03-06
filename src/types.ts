@@ -4,6 +4,10 @@ export interface DetectedTech {
   name: string;
   version: string;
   source: string;
+  /** How confident are we in this version? */
+  constraintType?: 'pinned' | 'minimum' | 'range';
+  /** Original constraint string (e.g. ">=3.10", "18 || 20 || 22") */
+  originalConstraint?: string;
 }
 
 export interface ParseResult {

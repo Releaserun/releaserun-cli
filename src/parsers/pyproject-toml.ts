@@ -23,13 +23,17 @@ export function parsePyprojectToml(dir: string): ParseResult {
   // Extract requires-python (e.g. requires-python = ">=3.11")
   const pythonMatch = content.match(/requires-python\s*=\s*["']([^"']+)["']/);
   if (pythonMatch) {
-    const version = extractVersion(pythonMatch[1]);
+    const raw = pythonMatch[1].trim();
+    const isMinConstraint = /^>=/.test(raw);
+    const version = extractVersion(raw);
     if (version) {
       seen.add('python');
       technologies.push({
         name: 'python',
         version,
         source: 'pyproject.toml (requires-python)',
+        constraintType: isMinConstraint ? 'minimum' : 'pinned',
+        originalConstraint: isMinConstraint ? raw : undefined,
       });
     }
   }
