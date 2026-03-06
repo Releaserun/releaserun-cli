@@ -24,11 +24,15 @@ export function generateBadges(
     seen.add(slug);
 
     const label = formatTechLabel(tech.name);
+    const versionLabel = tech.version && tech.version !== 'unknown' ? ` ${tech.version}` : '';
+    const versionPath = tech.version && tech.version !== 'unknown' ? `/${tech.version}` : '';
     const styleParam = options.style !== 'flat' ? `?style=${options.style}` : '';
-    const url = `${BADGE_BASE}/${options.type}/${slug}.svg${styleParam}`;
-    const link = `https://releaserun.com/tools/dep-eol-scanner/`;
+    const url = `${BADGE_BASE}/${options.type}/${slug}${versionPath}.svg${styleParam}`;
+    const link = tech.version && tech.version !== 'unknown'
+      ? `https://releaserun.com/${slug}/${tech.version}/`
+      : `https://releaserun.com/${slug}/`;
 
-    badges.push(`[![${label} ${capitalize(options.type)}](${url})](${link})`);
+    badges.push(`[![${label}${versionLabel} ${capitalize(options.type)}](${url})](${link})`);
   }
 
   return badges;

@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { runCheck, getExitCode } from './commands/check.js';
 import { runBadges } from './commands/badges.js';
 import { runCi } from './commands/ci.js';
+import { runReadme } from './commands/readme.js';
 import { renderTable } from './output/table.js';
 import { renderJson } from './output/json.js';
 
@@ -12,7 +13,7 @@ const program = new Command();
 program
   .name('releaserun')
   .description('Scan your project for EOL dependencies, CVEs, and version health. Get a grade.')
-  .version('1.0.0');
+  .version('1.1.0');
 
 program
   .command('check')
@@ -87,6 +88,31 @@ program
         noCache: opts.cache === false,
         verbose: opts.verbose,
         failOn: opts.failOn,
+      });
+    } catch (err) {
+      console.error('Error:', err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('readme')
+  .description('Generate version-specific badge markdown and optionally inject into README')
+  .option('-p, --path <dir>', 'Directory to scan (default: cwd)')
+  .option('--write', 'Write badges to README file')
+  .option('--readme <path>', 'Path to README file (default: README.md)')
+  .option('--style <style>', 'Badge style: flat, flat-square, plastic, for-the-badge', 'flat')
+  .option('--type <type>', 'Badge type: health, eol, v, or cve', 'health')
+  .option('--verbose', 'Show detailed output')
+  .action((opts) => {
+    try {
+      runReadme({
+        path: opts.path,
+        write: opts.write,
+        readme: opts.readme,
+        style: opts.style,
+        type: opts.type,
+        verbose: opts.verbose,
       });
     } catch (err) {
       console.error('Error:', err instanceof Error ? err.message : String(err));

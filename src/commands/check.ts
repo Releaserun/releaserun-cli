@@ -48,7 +48,7 @@ export async function runCheck(options: CheckOptions): Promise<ScanResult> {
     // Fetch EOL data and badge data in parallel
     const [eolData, badgeData] = await Promise.all([
       fetchEolData(slug, tech.version, options.noCache).catch(() => null),
-      fetchBadgeData(slug, 'health', options.noCache).catch(() => null),
+      fetchBadgeData(slug, 'health', options.noCache, tech.version).catch(() => null),
     ]);
 
     // Determine CVE count (from badge if available, otherwise 0)

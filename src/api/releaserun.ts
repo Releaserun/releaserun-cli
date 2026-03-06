@@ -16,8 +16,10 @@ export async function fetchBadgeData(
   product: string,
   type: string = 'health',
   noCache = false,
+  version?: string,
 ): Promise<BadgeData | null> {
-  const url = `${BADGE_BASE}/${type}/${product}.svg`;
+  const versionPath = version ? `/${version}` : '';
+  const url = `${BADGE_BASE}/${type}/${product}${versionPath}.svg`;
 
   if (!noCache) {
     const cached = getCached<BadgeData>(url);
@@ -31,7 +33,7 @@ export async function fetchBadgeData(
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'releaserun-cli/1.0.0',
+        'User-Agent': 'releaserun-cli/1.1.0',
       },
     });
 
@@ -77,7 +79,8 @@ function parseSvgBadge(svg: string): BadgeData | null {
     const value = texts[1];
 
     // Try to extract grade from value (A, B, C, D, F)
-    const gradeMatch = value.match(/^([A-F])[+-]?$/);
+    // Supports both plain grade ("A") and versioned format ("22 | D")
+    const gradeMatch = value.match(/(?:^|\|\s*)([A-F])[+-]?$/);
     const grade = gradeMatch ? gradeMatch[1] : null;
 
     return { grade, label, value };
