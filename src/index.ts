@@ -58,9 +58,9 @@ program
   .option('--badge-style <style>', 'Badge style: flat or flat-square', 'flat')
   .option('--badge-type <type>', 'Badge type: health, eol, v, or cve', 'health')
   .option('--verbose', 'Show detailed output')
-  .action((opts) => {
+  .action(async (opts) => {
     try {
-      runBadges({
+      await runBadges({
         path: opts.path,
         badgeStyle: opts.badgeStyle,
         badgeType: opts.badgeType,
@@ -104,9 +104,9 @@ program
   .option('--style <style>', 'Badge style: flat, flat-square, plastic, for-the-badge', 'flat')
   .option('--type <type>', 'Badge type: health, eol, v, or cve', 'health')
   .option('--verbose', 'Show detailed output')
-  .action((opts) => {
+  .action(async (opts) => {
     try {
-      runReadme({
+      await runReadme({
         path: opts.path,
         write: opts.write,
         readme: opts.readme,

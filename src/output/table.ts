@@ -1,7 +1,11 @@
+import { createRequire } from 'node:module';
 import chalk from 'chalk';
 import Table from 'cli-table3';
 import type { TechReport, Grade, ScanResult } from '../types.js';
 import { formatEolDate } from './grade.js';
+
+const require = createRequire(import.meta.url);
+const { version: PKG_VERSION } = require('../../package.json');
 
 function gradeColor(grade: Grade): string {
   switch (grade) {
@@ -14,8 +18,26 @@ function gradeColor(grade: Grade): string {
   }
 }
 
+const DISPLAY_NAMES: Record<string, string> = {
+  'nodejs': 'Node.js',
+  'typescript': 'TypeScript',
+  'javascript': 'JavaScript',
+  'postgresql': 'PostgreSQL',
+  'mysql': 'MySQL',
+  'mariadb': 'MariaDB',
+  'docker-engine': 'Docker',
+  'dotnet': '.NET',
+  'vuejs': 'Vue.js',
+  'angular': 'Angular',
+  'php': 'PHP',
+  'golang': 'Go',
+  'mongodb': 'MongoDB',
+};
+
 function techName(name: string): string {
-  // Capitalize first letter of each word
+  const display = DISPLAY_NAMES[name.toLowerCase()];
+  if (display) return display;
+  // Capitalize first letter of each word as fallback
   return name.replace(/\b\w/g, c => c.toUpperCase());
 }
 
@@ -24,8 +46,8 @@ export function renderTable(result: ScanResult, noColor = false): string {
 
   lines.push('');
   lines.push(noColor
-    ? '  releaserun v1.3.0 -- Stack Health Check'
-    : `  ${chalk.bold('releaserun')} v1.3.0 -- Stack Health Check`);
+    ? `  releaserun v${PKG_VERSION} -- Stack Health Check`
+    : `  ${chalk.bold('releaserun')} v${PKG_VERSION} -- Stack Health Check`);
   lines.push('');
   lines.push(`  Scanning ${result.scannedPath}...`);
 
