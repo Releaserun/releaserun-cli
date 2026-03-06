@@ -24,8 +24,8 @@ export function renderTable(result: ScanResult, noColor = false): string {
 
   lines.push('');
   lines.push(noColor
-    ? '  releaserun v1.0.0 -- Stack Health Check'
-    : `  ${chalk.bold('releaserun')} v1.0.0 -- Stack Health Check`);
+    ? '  releaserun v1.3.0 -- Stack Health Check'
+    : `  ${chalk.bold('releaserun')} v1.3.0 -- Stack Health Check`);
   lines.push('');
   lines.push(`  Scanning ${result.scannedPath}...`);
 
