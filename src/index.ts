@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name('releaserun')
   .description('Scan your project for EOL dependencies, CVEs, and version health. Get a grade.')
-  .version('1.3.0');
+  .version('1.4.0');
 
 program
   .command('check [directory]')

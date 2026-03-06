@@ -1,6 +1,6 @@
 {
   "name": "releaserun",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "CLI tool that scans your project's dependency files and reports EOL status, CVE counts, and health grades",
   "main": "dist/index.js",
   "bin": {
