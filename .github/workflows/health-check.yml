@@ -20,6 +20,6 @@ jobs:
       - uses: Releaserun/releaserun-action@main
         with:
           path: '.'
-          fail-on: 'F'
+          fail-on: 'D'
           comment: 'true'
           badge: 'true'
