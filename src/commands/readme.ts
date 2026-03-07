@@ -57,7 +57,19 @@ export async function runReadme(options: ReadmeCommandOptions): Promise<void> {
   const content = readFileSync(readmePath, 'utf-8');
   const updated = injectBadges(content, badgeBlock);
 
-  writeFileSync(readmePath, updated, 'utf-8');
+  try {
+    writeFileSync(readmePath, updated, 'utf-8');
+  } catch (err: any) {
+    if (err.code === 'EACCES' || err.code === 'EPERM') {
+      console.error(`  Error: Cannot write to ${readmePath} — permission denied.`);
+      console.error(`  Check file permissions or try running with appropriate access.`);
+    } else if (err.code === 'EROFS') {
+      console.error(`  Error: Cannot write to ${readmePath} — read-only filesystem.`);
+    } else {
+      console.error(`  Error writing to ${readmePath}: ${err.message}`);
+    }
+    process.exit(1);
+  }
   console.log(`  Badges written to ${readmePath}`);
 }
 
