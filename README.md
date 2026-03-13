@@ -21,7 +21,7 @@ npx releaserun check
 Point it at any project directory. It reads your dependency files, figures out what you're running, and tells you what's healthy, what's approaching EOL, and what has known CVEs.
 
 ```
-  releaserun v1.3.0 — Stack Health Check
+  releaserun v1.4.0 — Stack Health Check
 
   ┌─────────────┬─────────┬────────┬──────┬───────┐
   │ Technology  │ Version │ EOL    │ CVEs │ Grade │
