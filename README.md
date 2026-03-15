@@ -192,7 +192,7 @@ No dependency files are uploaded. The only network calls are to check version st
 - [ReleaseRun](https://releaserun.com) - Release lifecycle tracking for 300+ technologies
 - [Badge API Docs](https://releaserun.github.io/badges) - Full badge reference
 - [GitHub Action](https://github.com/Releaserun/releaserun-action) - CI integration with PR comments and health badges ([Marketplace](https://github.com/marketplace/actions/releaserun-stack-health-check))
-- [Free Developer Tools](https://releaserun.com/tools/) - 30 browser-based tools (no signup)
+- [Free Developer Tools](https://releaserun.com/tools/) - 57 free developer tools: K8s security linter, GitHub Actions auditor, npm health checker, vulnerability scanner, and more (no signup)
 
 ## License
 
